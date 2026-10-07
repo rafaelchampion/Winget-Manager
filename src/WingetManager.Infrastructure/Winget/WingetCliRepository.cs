@@ -8,40 +8,73 @@ namespace WingetManager.Infrastructure.Winget;
 
 public class WingetCliRepository(ILogger<WingetCliRepository> logger) : IPackageRepository
 {
+    private static readonly TimeSpan DefaultQueryTimeout = TimeSpan.FromSeconds(60);
+    private static readonly TimeSpan DefaultInstallTimeout = TimeSpan.FromMinutes(20);
+
     public virtual async Task<IReadOnlyList<Package>> GetInstalledPackagesAsync(CancellationToken ct = default)
     {
         logger.LogInformation("Executing 'winget list'...");
-        var (exitCode, stdout, stderr) = await RunWingetProcessAsync("list", ct: ct);
-        if (exitCode != 0)
+        try
         {
-            logger.LogWarning("winget list returned exit code {ExitCode}: {Error}", exitCode, stderr);
-        }
+            var (exitCode, stdout, stderr) = await RunWingetProcessAsync("list --accept-source-agreements", timeout: DefaultQueryTimeout, ct: ct);
+            if (exitCode != 0)
+            {
+                logger.LogWarning("winget list returned exit code {ExitCode}: {Error}", exitCode, stderr);
+            }
 
-        return WingetCliParser.ParseUpgradesTable(stdout);
+            return WingetCliParser.ParseUpgradesTable(stdout);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogError(ex, "Failed to execute 'winget list'");
+            return [];
+        }
     }
 
     public virtual async Task<IReadOnlyList<Package>> GetAvailableUpgradesAsync(CancellationToken ct = default)
     {
         logger.LogInformation("Executing 'winget upgrade'...");
-        var (exitCode, stdout, stderr) = await RunWingetProcessAsync("upgrade --include-unknown", ct: ct);
-        if (exitCode != 0 && !stdout.Contains("No installed package found", StringComparison.OrdinalIgnoreCase))
+        try
         {
-            logger.LogWarning("winget upgrade returned exit code {ExitCode}: {Error}", exitCode, stderr);
-        }
+            var (exitCode, stdout, stderr) = await RunWingetProcessAsync("upgrade --include-unknown --accept-source-agreements", timeout: DefaultQueryTimeout, ct: ct);
+            if (exitCode != 0 && !stdout.Contains("No installed package found", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogWarning("winget upgrade returned exit code {ExitCode}: {Error}", exitCode, stderr);
+            }
 
-        return WingetCliParser.ParseUpgradesTable(stdout);
+            return WingetCliParser.ParseUpgradesTable(stdout);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogError(ex, "Failed to execute 'winget upgrade'");
+            return [];
+        }
     }
 
     public virtual async Task<IReadOnlyList<Package>> SearchPackagesAsync(string query, CancellationToken ct = default)
     {
-        logger.LogInformation("Executing 'winget search {Query}'...", query);
-        var (exitCode, stdout, stderr) = await RunWingetProcessAsync($"search \"{query}\"", ct: ct);
-        if (exitCode != 0)
+        var cleanQuery = WingetCliParser.SanitizeSearchQuery(query);
+        if (string.IsNullOrWhiteSpace(cleanQuery))
         {
-            logger.LogWarning("winget search returned exit code {ExitCode}: {Error}", exitCode, stderr);
+            return [];
         }
 
-        return WingetCliParser.ParseSearchTable(stdout);
+        logger.LogInformation("Executing 'winget search {Query}'...", cleanQuery);
+        try
+        {
+            var (exitCode, stdout, stderr) = await RunWingetProcessAsync($"search \"{cleanQuery}\" --accept-source-agreements", timeout: DefaultQueryTimeout, ct: ct);
+            if (exitCode != 0)
+            {
+                logger.LogWarning("winget search returned exit code {ExitCode}: {Error}", exitCode, stderr);
+            }
+
+            return WingetCliParser.ParseSearchTable(stdout);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogError(ex, "Failed to execute 'winget search'");
+            return [];
+        }
     }
 
     public virtual async Task<PackageUpgradeResult> UpgradePackageAsync(
@@ -49,36 +82,43 @@ public class WingetCliRepository(ILogger<WingetCliRepository> logger) : IPackage
         IProgress<UpgradeProgress>? progress = null, 
         CancellationToken ct = default)
     {
-        logger.LogInformation("Executing 'winget upgrade --id {PackageId}'...", packageId);
-        progress?.Report(new UpgradeProgress(packageId, UpgradeState.Downloading, 10, "Starting package upgrade..."));
-
-        var args = $"upgrade --id \"{packageId}\" --exact --accept-source-agreements --accept-package-agreements";
-
-        var (exitCode, stdout, stderr) = await RunWingetProcessAsync(args, line =>
+        var cleanId = WingetCliParser.SanitizePackageId(packageId);
+        if (string.IsNullOrWhiteSpace(cleanId))
         {
-            var percent = WingetCliParser.ExtractProgressPercentage(line);
-            if (percent.HasValue)
-            {
-                var state = percent.Value >= 90 ? UpgradeState.Installing : UpgradeState.Downloading;
-                progress?.Report(new UpgradeProgress(packageId, state, percent.Value, line.Trim()));
-            }
-            else if (line.Contains("installer", StringComparison.OrdinalIgnoreCase) || 
-                     line.Contains("installing", StringComparison.OrdinalIgnoreCase))
-            {
-                progress?.Report(new UpgradeProgress(packageId, UpgradeState.Installing, 70, line.Trim()));
-            }
-        }, ct);
-
-        bool success = exitCode == 0 || stdout.Contains("Successfully installed", StringComparison.OrdinalIgnoreCase)
-                                     || stdout.Contains("Instalação bem-sucedida", StringComparison.OrdinalIgnoreCase);
-
-        string? error = null;
-        if (!success)
-        {
-            error = !string.IsNullOrWhiteSpace(stderr) ? stderr : stdout;
+            return new PackageUpgradeResult(packageId, false, "Invalid package ID.");
         }
 
-        return new PackageUpgradeResult(packageId, success, error);
+        logger.LogInformation("Executing 'winget upgrade --id {PackageId}'...", cleanId);
+        progress?.Report(new UpgradeProgress(cleanId, UpgradeState.Downloading, 10, "Starting package upgrade..."));
+
+        var args = $"upgrade --id \"{cleanId}\" --exact --accept-source-agreements --accept-package-agreements --disable-interactivity";
+
+        try
+        {
+            var (exitCode, stdout, stderr) = await RunWingetProcessAsync(args, line =>
+            {
+                var percent = WingetCliParser.ExtractProgressPercentage(line);
+                if (percent.HasValue)
+                {
+                    var state = percent.Value >= 90 ? UpgradeState.Installing : UpgradeState.Downloading;
+                    progress?.Report(new UpgradeProgress(cleanId, state, percent.Value, line.Trim()));
+                }
+                else if (line.Contains("installer", StringComparison.OrdinalIgnoreCase) || 
+                         line.Contains("installing", StringComparison.OrdinalIgnoreCase) ||
+                         line.Contains("instalando", StringComparison.OrdinalIgnoreCase))
+                {
+                    progress?.Report(new UpgradeProgress(cleanId, UpgradeState.Installing, 70, line.Trim()));
+                }
+            }, timeout: DefaultInstallTimeout, ct: ct);
+
+            var (success, error) = WingetCliParser.InterpretExitCode(exitCode, stdout, stderr);
+            return new PackageUpgradeResult(cleanId, success, error);
+        }
+        catch (TimeoutException tex)
+        {
+            logger.LogError(tex, "Timeout upgrading package {PackageId}", cleanId);
+            return new PackageUpgradeResult(cleanId, false, tex.Message);
+        }
     }
 
     public virtual async Task<PackageUpgradeResult> InstallPackageAsync(
@@ -87,45 +127,56 @@ public class WingetCliRepository(ILogger<WingetCliRepository> logger) : IPackage
         IProgress<UpgradeProgress>? progress = null, 
         CancellationToken ct = default)
     {
-        logger.LogInformation("Executing 'winget install --id {PackageId}'...", packageId);
-        progress?.Report(new UpgradeProgress(packageId, UpgradeState.Downloading, 10, "Starting package installation..."));
+        var cleanId = WingetCliParser.SanitizePackageId(packageId);
+        if (string.IsNullOrWhiteSpace(cleanId))
+        {
+            return new PackageUpgradeResult(packageId, false, "Invalid package ID.");
+        }
 
-        var args = $"install --id \"{packageId}\" --exact --accept-source-agreements --accept-package-agreements";
+        logger.LogInformation("Executing 'winget install --id {PackageId}'...", cleanId);
+        progress?.Report(new UpgradeProgress(cleanId, UpgradeState.Downloading, 10, "Starting package installation..."));
+
+        var args = $"install --id \"{cleanId}\" --exact --accept-source-agreements --accept-package-agreements --disable-interactivity";
         if (!string.IsNullOrWhiteSpace(version))
         {
-            args += $" --version \"{version}\"";
+            var cleanVersion = WingetCliParser.SanitizeSearchQuery(version);
+            if (!string.IsNullOrWhiteSpace(cleanVersion))
+            {
+                args += $" --version \"{cleanVersion}\"";
+            }
         }
 
-        var (exitCode, stdout, stderr) = await RunWingetProcessAsync(args, line =>
+        try
         {
-            var percent = WingetCliParser.ExtractProgressPercentage(line);
-            if (percent.HasValue)
+            var (exitCode, stdout, stderr) = await RunWingetProcessAsync(args, line =>
             {
-                var state = percent.Value >= 90 ? UpgradeState.Installing : UpgradeState.Downloading;
-                progress?.Report(new UpgradeProgress(packageId, state, percent.Value, line.Trim()));
-            }
-            else if (line.Contains("installing", StringComparison.OrdinalIgnoreCase) || 
-                     line.Contains("instalando", StringComparison.OrdinalIgnoreCase))
-            {
-                progress?.Report(new UpgradeProgress(packageId, UpgradeState.Installing, 70, line.Trim()));
-            }
-        }, ct);
+                var percent = WingetCliParser.ExtractProgressPercentage(line);
+                if (percent.HasValue)
+                {
+                    var state = percent.Value >= 90 ? UpgradeState.Installing : UpgradeState.Downloading;
+                    progress?.Report(new UpgradeProgress(cleanId, state, percent.Value, line.Trim()));
+                }
+                else if (line.Contains("installing", StringComparison.OrdinalIgnoreCase) || 
+                         line.Contains("instalando", StringComparison.OrdinalIgnoreCase))
+                {
+                    progress?.Report(new UpgradeProgress(cleanId, UpgradeState.Installing, 70, line.Trim()));
+                }
+            }, timeout: DefaultInstallTimeout, ct: ct);
 
-        bool success = exitCode == 0 || stdout.Contains("Successfully installed", StringComparison.OrdinalIgnoreCase)
-                                     || stdout.Contains("Instalação bem-sucedida", StringComparison.OrdinalIgnoreCase);
-
-        string? error = null;
-        if (!success)
-        {
-            error = !string.IsNullOrWhiteSpace(stderr) ? stderr : stdout;
+            var (success, error) = WingetCliParser.InterpretExitCode(exitCode, stdout, stderr);
+            return new PackageUpgradeResult(cleanId, success, error);
         }
-
-        return new PackageUpgradeResult(packageId, success, error);
+        catch (TimeoutException tex)
+        {
+            logger.LogError(tex, "Timeout installing package {PackageId}", cleanId);
+            return new PackageUpgradeResult(cleanId, false, tex.Message);
+        }
     }
 
     private static async Task<(int ExitCode, string StdOut, string StdErr)> RunWingetProcessAsync(
         string arguments, 
         Action<string>? onStdOutLine = null, 
+        TimeSpan? timeout = null,
         CancellationToken ct = default)
     {
         var psi = new ProcessStartInfo
@@ -165,8 +216,37 @@ public class WingetCliRepository(ILogger<WingetCliRepository> logger) : IPackage
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
 
-        await process.WaitForExitAsync(ct);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        if (timeout.HasValue)
+        {
+            linkedCts.CancelAfter(timeout.Value);
+        }
 
-        return (process.ExitCode, stdoutBuilder.ToString(), stderrBuilder.ToString());
+        try
+        {
+            await process.WaitForExitAsync(linkedCts.Token);
+            return (process.ExitCode, stdoutBuilder.ToString(), stderrBuilder.ToString());
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+            }
+            catch
+            {
+                // Best effort process cleanup
+            }
+
+            if (ct.IsCancellationRequested)
+            {
+                throw;
+            }
+
+            throw new TimeoutException($"The winget process timed out after {timeout?.TotalSeconds}s.");
+        }
     }
 }
