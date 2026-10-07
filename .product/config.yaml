@@ -1,0 +1,43 @@
+# Mettle project config. Created by `/mettle init`; edit freely.
+project:
+  name: "Winget-Manager"
+  language: en
+  status_doc: "PRODUCT.md"
+
+state_dir: .product
+
+tracker: github
+repo: "rafaelchampion/Winget-Manager"
+
+git:
+  main_branch: main
+  staging_branch: staging
+  feature_pattern: "feature/issue-<ID>-<name>"
+  protect_main_and_staging: true
+
+preview:
+  method: "manual"
+  restricted: true
+  access: "local-build"
+
+labels:
+  planned: "status: planned"
+  in_progress: "status: in progress"
+  in_review: "status: in review"
+
+security_profile:
+  accounts: false
+  personal_data: false
+  payments: false
+  user_generated_content: false
+  file_uploads: false
+  third_party_integrations: true
+  admin_interface: false
+  public_api: false
+  markets: []
+
+review_cadence: ""
+
+agent:
+  host: "antigravity"
+  rule_path: ".agents/rules/mettle-pipeline.md"

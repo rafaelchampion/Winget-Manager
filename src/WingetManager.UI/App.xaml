@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    x:Class="WingetManager.UI.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:WingetManager.UI.Converters"
+    xmlns:local="using:WingetManager.UI">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <!-- Converters -->
+            <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+            <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+            <converters:NameToAvatarBrushConverter x:Key="NameToAvatarBrushConverter" />
+            <converters:IntToZeroVisibilityConverter x:Key="IntToZeroVisibilityConverter" />
+            <converters:StringFormatConverter x:Key="StringFormatConverter" />
+            <converters:PinButtonLabelConverter x:Key="PinButtonLabelConverter" />
+            <converters:ExcludeButtonLabelConverter x:Key="ExcludeButtonLabelConverter" />
+            <converters:ThemeToIndexConverter x:Key="ThemeToIndexConverter" />
+            <converters:FilterToCheckedConverter x:Key="FilterToCheckedConverter" />
+            <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+
+            <!-- Typography & Component styles -->
+            <Style x:Key="BodySubtleTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">
+                <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            </Style>
+
+            <Style x:Key="FluentCardBorderStyle" TargetType="Border">
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="12" />
+            </Style>
+
+            <Style x:Key="HeroCardBorderStyle" TargetType="Border">
+                <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+                <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="16" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

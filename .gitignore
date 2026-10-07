@@ -1,0 +1,26 @@
+## Build and output
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+*.userprefs
+
+## Visual Studio
+.vs/
+.vscode/
+
+## Windows App SDK / WinUI
+*.DotSettings.user
+_ReSharper*/
+
+## Package caches & scratch
+.impeccable/
+packages/
+*.nupkg
+
+## Antigravity IDE scratch / local
+.system_generated/

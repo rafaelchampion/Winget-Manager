@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WingetManager.UI (Unpackaged)": {
+      "commandName": "Project",
+      "nativeDebugging": false
+    }
+  }
+}
