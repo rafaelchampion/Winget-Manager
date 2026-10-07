@@ -7,7 +7,7 @@
     xmlns:vm="using:WingetManager.UI.ViewModels"
     mc:Ignorable="d">
 
-    <Grid Padding="32,24,32,20" RowDefinitions="Auto,Auto,Auto,*">
+    <Grid MaxWidth="1240" HorizontalAlignment="Stretch" Margin="32,20,32,24" RowDefinitions="Auto,Auto,Auto,*">
         <!-- 1. Hero Health Surface -->
         <Border Grid.Row="0"
                 Style="{StaticResource HeroCardBorderStyle}"
@@ -16,7 +16,7 @@
             <Grid>
                 <!-- State A: Updates are Available -->
                 <Grid ColumnDefinitions="Auto,*,Auto"
-                      Visibility="{x:Bind ViewModel.HasUpdates, Mode=OneWay}">
+                      Visibility="{x:Bind ViewModel.ShowHeroUpdatesAvailable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <!-- Left Accent Icon Squircle -->
                     <Border Grid.Column="0"
                             Width="48" Height="48"
@@ -69,7 +69,7 @@
 
                 <!-- State B: All Apps Up to Date -->
                 <Grid ColumnDefinitions="Auto,*,Auto"
-                      Visibility="{x:Bind ViewModel.IsUpToDate, Mode=OneWay}">
+                      Visibility="{x:Bind ViewModel.ShowHeroUpToDate, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <!-- Left Emerald Success Squircle -->
                     <Border Grid.Column="0"
                             Width="48" Height="48"
@@ -110,7 +110,7 @@
 
                 <!-- State C: Currently Scanning -->
                 <Grid ColumnDefinitions="Auto,*,Auto"
-                      Visibility="{x:Bind ViewModel.IsScanning, Mode=OneWay}">
+                      Visibility="{x:Bind ViewModel.ShowHeroScanning, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Border Grid.Column="0"
                             Width="48" Height="48"
                             CornerRadius="12"
@@ -134,7 +134,7 @@
         </Border>
 
         <!-- 2. Filter Pills & Search Toolbar -->
-        <Grid Grid.Row="1" Margin="0,0,0,14">
+        <Grid Grid.Row="1" Margin="0,0,0,16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
@@ -223,7 +223,7 @@
                  IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=TwoWay}"
                  Title="{x:Bind ViewModel.InfoBarTitle, Mode=OneWay}"
                  Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}"
-                 Margin="0,0,0,10" />
+                 Margin="0,0,0,12" />
 
         <!-- 4. Package List Surface -->
         <Grid Grid.Row="3">
@@ -245,6 +245,14 @@
 
             <!-- Package Cards ListView -->
             <ListView ItemsSource="{x:Bind ViewModel.FilteredPackages, Mode=OneWay}" SelectionMode="None">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="Padding" Value="0,2,0,2" />
+                        <Setter Property="Margin" Value="0" />
+                        <Setter Property="MinHeight" Value="0" />
+                    </Style>
+                </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:PackageItemViewModel">
                         <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
@@ -252,21 +260,19 @@
                                 BorderThickness="1"
                                 CornerRadius="10"
                                 Padding="16,12,16,12"
-                                Margin="0,3,0,3">
+                                Margin="0,2,0,2">
                             <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
                                 <!-- Selection CheckBox -->
                                 <CheckBox Grid.Column="0" IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
                                           MinWidth="32" Margin="0,0,10,0" VerticalAlignment="Center" />
 
-                                <!-- Modern Fluent Software Icon Squircle -->
+                                <!-- Modern Fluent Software Monogram Squircle -->
                                 <Border Grid.Column="1" Width="38" Height="38" CornerRadius="9"
-                                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
-                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                        BorderThickness="1"
+                                        Background="{x:Bind Name, Converter={StaticResource NameToAvatarBrushConverter}}"
                                         Margin="0,0,14,0" VerticalAlignment="Center">
-                                    <FontIcon Glyph="&#xE71D;" FontSize="16"
-                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Bind Initials}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
 
                                 <!-- App Title, Package ID, Source -->

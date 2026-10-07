@@ -34,7 +34,9 @@ public partial class AppsViewModel : ObservableObject
     private string _selectedFilter = "All"; // "All", "Updates", "Protected"
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpToDate))]
+    [NotifyPropertyChangedFor(nameof(ShowHeroScanning))]
+    [NotifyPropertyChangedFor(nameof(ShowHeroUpdatesAvailable))]
+    [NotifyPropertyChangedFor(nameof(ShowHeroUpToDate))]
     private bool _isScanning;
 
     [ObservableProperty]
@@ -47,10 +49,15 @@ public partial class AppsViewModel : ObservableObject
     private string _lastScannedText = string.Empty;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpToDate))]
+    [NotifyPropertyChangedFor(nameof(ShowHeroScanning))]
+    [NotifyPropertyChangedFor(nameof(ShowHeroUpdatesAvailable))]
+    [NotifyPropertyChangedFor(nameof(ShowHeroUpToDate))]
     private int _totalAppsCount;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowHeroScanning))]
+    [NotifyPropertyChangedFor(nameof(ShowHeroUpdatesAvailable))]
+    [NotifyPropertyChangedFor(nameof(ShowHeroUpToDate))]
     private int _updatesAvailableCount;
 
     [ObservableProperty]
@@ -63,10 +70,15 @@ public partial class AppsViewModel : ObservableObject
     private bool _hasSelectedPackages;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsUpToDate))]
+    [NotifyPropertyChangedFor(nameof(ShowHeroScanning))]
+    [NotifyPropertyChangedFor(nameof(ShowHeroUpdatesAvailable))]
+    [NotifyPropertyChangedFor(nameof(ShowHeroUpToDate))]
     private bool _hasUpdates;
 
-    public bool IsUpToDate => !IsScanning && TotalAppsCount > 0 && !HasUpdates;
+    public bool ShowHeroScanning => IsScanning;
+    public bool ShowHeroUpdatesAvailable => !IsScanning && HasUpdates && UpdatesAvailableCount > 0;
+    public bool ShowHeroUpToDate => !IsScanning && (!HasUpdates || UpdatesAvailableCount == 0);
+
 
 
     [ObservableProperty]

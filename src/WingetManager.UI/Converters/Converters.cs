@@ -27,13 +27,17 @@ public class NameToAvatarBrushConverter : IValueConverter
     private static readonly Windows.UI.Color[] Palette =
     [
         Windows.UI.Color.FromArgb(255, 0, 120, 212),   // Microsoft Blue
+        Windows.UI.Color.FromArgb(255, 119, 56, 255),  // Vibrant Violet
         Windows.UI.Color.FromArgb(255, 16, 124, 65),   // Forest Green
-        Windows.UI.Color.FromArgb(255, 135, 100, 184), // Soft Purple
-        Windows.UI.Color.FromArgb(255, 202, 80, 16),   // Warm Amber / Coral
-        Windows.UI.Color.FromArgb(255, 0, 153, 188),   // Peacock Teal
-        Windows.UI.Color.FromArgb(255, 180, 0, 158),   // Orchid / Magenta
-        Windows.UI.Color.FromArgb(255, 232, 17, 35),   // Crimson
-        Windows.UI.Color.FromArgb(255, 74, 85, 104)    // Slate
+        Windows.UI.Color.FromArgb(255, 3, 131, 135),   // Deep Teal
+        Windows.UI.Color.FromArgb(255, 0, 153, 188),   // Peacock Blue
+        Windows.UI.Color.FromArgb(255, 177, 70, 194),  // Rich Berry
+        Windows.UI.Color.FromArgb(255, 136, 23, 152),  // Soft Orchid
+        Windows.UI.Color.FromArgb(255, 216, 59, 1),    // Sunset Coral
+        Windows.UI.Color.FromArgb(255, 226, 108, 0),   // Warm Amber
+        Windows.UI.Color.FromArgb(255, 232, 17, 35),   // Crimson Rose
+        Windows.UI.Color.FromArgb(255, 79, 70, 229),   // Indigo Modern
+        Windows.UI.Color.FromArgb(255, 75, 85, 99)     // Slate
     ];
 
     public object Convert(object value, Type targetType, object parameter, string language)
