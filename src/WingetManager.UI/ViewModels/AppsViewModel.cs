@@ -34,6 +34,7 @@ public partial class AppsViewModel : ObservableObject
     private string _selectedFilter = "All"; // "All", "Updates", "Protected"
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsUpToDate))]
     private bool _isScanning;
 
     [ObservableProperty]
@@ -46,6 +47,7 @@ public partial class AppsViewModel : ObservableObject
     private string _lastScannedText = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsUpToDate))]
     private int _totalAppsCount;
 
     [ObservableProperty]
@@ -61,7 +63,11 @@ public partial class AppsViewModel : ObservableObject
     private bool _hasSelectedPackages;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsUpToDate))]
     private bool _hasUpdates;
+
+    public bool IsUpToDate => !IsScanning && TotalAppsCount > 0 && !HasUpdates;
+
 
     [ObservableProperty]
     private string _infoBarTitle = string.Empty;

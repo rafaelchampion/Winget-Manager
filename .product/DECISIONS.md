@@ -27,6 +27,19 @@ Never edit past entries. To change a decision, add a new entry that supersedes i
   - Scope: Full core trio for v1.0 (Updates + Search/Install + Settings/Pins/Exclusions).
   - Elevation: Standard user execution default; on-demand UAC helper only when required by installer.
 - **Roadmap impact:** Establishes 3-phase gated roadmap in `.product/ROADMAP.md`.
-- **Dissent or risk accepted:** Microsoft Store review may scrutinize child process elevation; addressed via Phase 3 security gate and contingency pivot criterion.
-- **Revisit trigger:** Phase 3 WACK / Store certification review.
 - **Supersedes / superseded by:** None.
+
+## D-003: Prioritize Consumer Velvet UI/UX Overhaul in Phase 1
+- **Date:** 2026-10-07
+- **Mode:** Pitch
+- **Question or idea:** Prioritize an end-to-end UI/UX overhaul focusing on Fluent 2 design craft, hero status surfaces, typography, and delight before continuing backend/security issues.
+- **Verdict:** Adopt with changes
+- **Confidence:** high
+- **Reasons:**
+  - Craft is the core product wedge: against alternatives with 10+ package managers, Winget-Manager's sole reason to exist is native Windows 11 elegance, speed, and zero intimidation.
+  - Changes adopted: bound the work to a concrete design system audit, hero health card, segmented pill filters, and polished package card hierarchy using the `impeccable` skill.
+- **Roadmap impact:** Inserts Issue #4 at the top of Phase 1 before Issue #2.
+- **Dissent or risk accepted:** Minor delay to IPC hardening; fully acceptable given existing unit test pass and architecture stability.
+- **Revisit trigger:** Manual review of overhauled UI in `staging`.
+- **Supersedes / superseded by:** None.
+

@@ -22,6 +22,9 @@
             <converters:ThemeToIndexConverter x:Key="ThemeToIndexConverter" />
             <converters:FilterToCheckedConverter x:Key="FilterToCheckedConverter" />
             <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <converters:FilterToPillBackgroundConverter x:Key="FilterToPillBackgroundConverter" />
+            <converters:FilterToPillBorderConverter x:Key="FilterToPillBorderConverter" />
+            <converters:FilterToPillFontWeightConverter x:Key="FilterToPillFontWeightConverter" />
 
             <!-- Typography & Component styles -->
             <Style x:Key="BodySubtleTextBlockStyle" TargetType="TextBlock" BasedOn="{StaticResource CaptionTextBlockStyle}">

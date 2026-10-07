@@ -16,7 +16,7 @@ _WIP limit: 1 phase in progress._
   - CLI argument sanitization check on package IDs.
   - Pass/Fail record documented in issue.
 - **Stop or pivot criterion:** If COM API proves too unstable across heterogeneous Windows 11 builds, fall back 100% to CLI repository with robust streaming output parser.
-- **Issues:** #1 (IPC & Argument Hardening), #2 (Diagnostic Drawer & Error Telemetry UI), #3 (Winget Execution Resilience & Flags)
+- **Issues:** #1 (Winget Resilience - CLOSED), #4 (Consumer Velvet UI/UX Overhaul & Fluent 2 Polish), #2 (Named Pipe IPC Security), #3 (Diagnostic Drawer UI)
 - **Depends on:** Phase 0 (Baseline architecture - complete)
 - **Appetite:** 1-2 weeks
 
@@ -31,7 +31,7 @@ _WIP limit: 1 phase in progress._
 - **Security gate:**
   - Package source constraint: verify installs originate only from authorized winget / msstore sources.
 - **Stop or pivot criterion:** If package icons cannot be fetched reliably, default to clean categorized Fluent glyphs rather than broken image placeholders.
-- **Issues:** #4 (Search & Install UX Polish), #5 (Pins & Exclusions Verification & Badging), #6 (Settings & Log Export)
+- **Issues:** #5 (Search & Install UX Polish), #6 (Pins & Exclusions Verification & Badging)
 - **Depends on:** Phase 1
 - **Appetite:** 1 week
 
@@ -65,3 +65,5 @@ _WIP limit: 1 phase in progress._
 | Date | Change | Reason | Decision |
 |---|---|---|---|
 | 2026-10-07 | Initial Roadmap created | Consolidate mode baseline for v1.0 Store release | D-002 |
+| 2026-10-07 | Prioritized Issue #4 (Consumer Velvet UI/UX Overhaul) | Elevate design craft, hero surface & delight to top of Phase 1 | D-003 |
+
