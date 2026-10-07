@@ -25,7 +25,7 @@ For Windows consumers who need an effortless way to keep PC software updated, Wi
 
 ## Current phase and "shippable" target
 - **Shippable Target (v1.0)**: Winget-Manager v1.0 certified on Microsoft Store (and mirrored on GitHub Releases), allowing any Windows 10/11 user to scan, batch-update, search/install packages, and manage pins/exclusions with seamless on-demand UAC handling.
-- **Active phase**: Phase 1 — Core Update Engine & IPC Hardening (Validation gate: successful 5+ app batch upgrade without UI hang or crash).
+- **Active phase**: Phase 1 — Core Update Engine & IPC Hardening. Progress: Issue #1 closed; proceeding to Issue #2 (Named Pipe IPC security). (Validation gate: successful 5+ app batch upgrade without UI hang or crash).
 
 ## Roadmap
 Full gated roadmap documented in [.product/ROADMAP.md](file:///d:/Arquivos/Documentos/Projetos/Winget-Manager/.product/ROADMAP.md).

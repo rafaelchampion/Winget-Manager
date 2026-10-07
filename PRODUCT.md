@@ -30,6 +30,7 @@ Windows 10/11 desktop environments, leveraging WinUI 3 (Windows App SDK 2.5) and
 ## Evidence on Hand
 - Working WinUI 3 application with complete Clean Architecture (.NET 10, MVVM, Domain, Application, Infrastructure).
 - Existing functional services for scanning, queue execution, search, version pins, exclusions, and elevation helper.
+- Hardened winget CLI execution pipeline with non-interactive flags, process-tree termination on timeout/cancel, typed exit code parsing, and parameter sanitization (closed #1, 42 tests passing).
 
 ## Product Principles
 1. **Zero-Intimidation Simplicity**: The primary action (keeping apps updated) should always be one click away with crystal-clear plain-language feedback.
