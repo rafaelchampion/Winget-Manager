@@ -7,179 +7,308 @@
     xmlns:vm="using:WingetManager.UI.ViewModels"
     mc:Ignorable="d">
 
-    <Grid Padding="28,20,28,16" RowDefinitions="Auto,Auto,Auto,*">
-        <!-- Header row -->
-        <Grid Grid.Row="0" Margin="0,0,0,14">
+    <Grid Padding="32,24,32,20" RowDefinitions="Auto,Auto,Auto,*">
+        <!-- 1. Hero Health Surface -->
+        <Border Grid.Row="0"
+                Style="{StaticResource HeroCardBorderStyle}"
+                Padding="24,20,24,20"
+                Margin="0,0,0,20">
+            <Grid>
+                <!-- State A: Updates are Available -->
+                <Grid ColumnDefinitions="Auto,*,Auto"
+                      Visibility="{x:Bind ViewModel.HasUpdates, Mode=OneWay}">
+                    <!-- Left Accent Icon Squircle -->
+                    <Border Grid.Column="0"
+                            Width="48" Height="48"
+                            CornerRadius="12"
+                            Background="{ThemeResource SystemAccentColor}"
+                            Margin="0,0,18,0"
+                            VerticalAlignment="Center">
+                        <FontIcon Glyph="&#xE896;" FontSize="20" Foreground="White"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+
+                    <!-- Middle Title & Context -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind ViewModel.UpdatesAvailableCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0} updates ready to install'}"
+                                   Style="{ThemeResource SubtitleTextBlockStyle}"
+                                   FontWeight="SemiBold" FontSize="18" />
+                        <TextBlock Text="Keep your apps secure and up to date with one click."
+                                   FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Margin="0,2,0,4" />
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{x:Bind ViewModel.TotalAppsCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0} apps installed'}"
+                                       FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                            <TextBlock Text="·" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                       Visibility="{x:Bind ViewModel.LastScannedText, Mode=OneWay, Converter={StaticResource NullToVisibilityConverter}}" />
+                            <TextBlock Text="{x:Bind ViewModel.LastScannedText, Mode=OneWay}"
+                                       FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- Right Action Buttons -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <Button Style="{ThemeResource AccentButtonStyle}"
+                                Height="40" Padding="18,0,18,0" CornerRadius="8"
+                                Command="{x:Bind ViewModel.UpgradeAllUpdatesCommand}"
+                                ToolTipService.ToolTip="Update all available packages now">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon Glyph="&#xE896;" FontSize="14" />
+                                <TextBlock Text="{x:Bind ViewModel.UpdatesAvailableCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}Update all ({0})'}"
+                                           FontWeight="SemiBold" FontSize="14" />
+                            </StackPanel>
+                        </Button>
+
+                        <Button Height="40" Width="40" Padding="0" CornerRadius="8"
+                                Command="{x:Bind ViewModel.ScanCommand}"
+                                ToolTipService.ToolTip="Check for updates">
+                            <FontIcon Glyph="&#xE72C;" FontSize="14" />
+                        </Button>
+                    </StackPanel>
+                </Grid>
+
+                <!-- State B: All Apps Up to Date -->
+                <Grid ColumnDefinitions="Auto,*,Auto"
+                      Visibility="{x:Bind ViewModel.IsUpToDate, Mode=OneWay}">
+                    <!-- Left Emerald Success Squircle -->
+                    <Border Grid.Column="0"
+                            Width="48" Height="48"
+                            CornerRadius="12"
+                            Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
+                            BorderBrush="{ThemeResource SystemFillColorSuccessBrush}"
+                            BorderThickness="1"
+                            Margin="0,0,18,0"
+                            VerticalAlignment="Center">
+                        <FontIcon Glyph="&#xE73E;" FontSize="20" Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+
+                    <!-- Middle Title & Reassurance -->
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Your apps are all up to date"
+                                   Style="{ThemeResource SubtitleTextBlockStyle}"
+                                   FontWeight="SemiBold" FontSize="18" />
+                        <TextBlock Text="{x:Bind ViewModel.TotalAppsCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}All {0} installed packages have their latest versions installed.'}"
+                                   FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Margin="0,2,0,4" />
+                        <TextBlock Text="{x:Bind ViewModel.LastScannedText, Mode=OneWay}"
+                                   FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                   Visibility="{x:Bind ViewModel.LastScannedText, Mode=OneWay, Converter={StaticResource NullToVisibilityConverter}}" />
+                    </StackPanel>
+
+                    <!-- Right Check Button -->
+                    <Button Grid.Column="2"
+                            Height="38" Padding="16,0,16,0" CornerRadius="8"
+                            Command="{x:Bind ViewModel.ScanCommand}"
+                            VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE72C;" FontSize="13" />
+                            <TextBlock Text="Check for updates" FontSize="13" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+
+                <!-- State C: Currently Scanning -->
+                <Grid ColumnDefinitions="Auto,*,Auto"
+                      Visibility="{x:Bind ViewModel.IsScanning, Mode=OneWay}">
+                    <Border Grid.Column="0"
+                            Width="48" Height="48"
+                            CornerRadius="12"
+                            Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                            Margin="0,0,18,0"
+                            VerticalAlignment="Center">
+                        <ProgressRing IsActive="True" Width="24" Height="24"
+                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="Checking for software updates..."
+                                   Style="{ThemeResource SubtitleTextBlockStyle}"
+                                   FontWeight="SemiBold" FontSize="18" />
+                        <TextBlock Text="Connecting to Windows Package Manager sources..."
+                                   FontSize="13" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   Margin="0,2,0,0" />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- 2. Filter Pills & Search Toolbar -->
+        <Grid Grid.Row="1" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <StackPanel VerticalAlignment="Center">
-                <TextBlock Text="Apps" Style="{ThemeResource TitleTextBlockStyle}" FontWeight="SemiBold" />
-                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                    <TextBlock Text="{x:Bind ViewModel.TotalAppsCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0} apps installed'}" 
-                               Style="{ThemeResource BodySubtleTextBlockStyle}" />
-                    <TextBlock Text="·" Style="{ThemeResource BodySubtleTextBlockStyle}" 
-                               Visibility="{x:Bind ViewModel.LastScannedText, Mode=OneWay, Converter={StaticResource NullToVisibilityConverter}}" />
-                    <TextBlock Text="{x:Bind ViewModel.LastScannedText, Mode=OneWay}" 
-                               Style="{ThemeResource BodySubtleTextBlockStyle}" />
-                </StackPanel>
+            <!-- Left: Segmented Filter Pills -->
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="18"
+                        Padding="3">
+                    <StackPanel Orientation="Horizontal" Spacing="3">
+                        <!-- All Filter Pill -->
+                        <Button Click="OnFilterAllClicked"
+                                Padding="14,6,14,6" CornerRadius="15"
+                                Background="{x:Bind ViewModel.SelectedFilter, Mode=OneWay, Converter={StaticResource FilterToPillBackgroundConverter}, ConverterParameter='All'}"
+                                BorderBrush="{x:Bind ViewModel.SelectedFilter, Mode=OneWay, Converter={StaticResource FilterToPillBorderConverter}, ConverterParameter='All'}"
+                                BorderThickness="1">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="All" FontSize="12.5"
+                                           FontWeight="{x:Bind ViewModel.SelectedFilter, Mode=OneWay, Converter={StaticResource FilterToPillFontWeightConverter}, ConverterParameter='All'}" />
+                                <TextBlock Text="{x:Bind ViewModel.TotalAppsCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}({0})'}"
+                                           FontSize="11.5" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Updates Filter Pill -->
+                        <Button Click="OnFilterUpdatesClicked"
+                                Padding="14,6,14,6" CornerRadius="15"
+                                Background="{x:Bind ViewModel.SelectedFilter, Mode=OneWay, Converter={StaticResource FilterToPillBackgroundConverter}, ConverterParameter='Updates'}"
+                                BorderBrush="{x:Bind ViewModel.SelectedFilter, Mode=OneWay, Converter={StaticResource FilterToPillBorderConverter}, ConverterParameter='Updates'}"
+                                BorderThickness="1">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="Updates" FontSize="12.5"
+                                           FontWeight="{x:Bind ViewModel.SelectedFilter, Mode=OneWay, Converter={StaticResource FilterToPillFontWeightConverter}, ConverterParameter='Updates'}" />
+                                <Border Background="{ThemeResource SystemAccentColor}" CornerRadius="8" Padding="6,1,6,1"
+                                        Visibility="{x:Bind ViewModel.HasUpdates, Mode=OneWay}">
+                                    <TextBlock Text="{x:Bind ViewModel.UpdatesAvailableCount, Mode=OneWay}"
+                                               FontSize="11" Foreground="White" FontWeight="SemiBold" />
+                                </Border>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Protected Filter Pill -->
+                        <Button Click="OnFilterProtectedClicked"
+                                Padding="14,6,14,6" CornerRadius="15"
+                                Background="{x:Bind ViewModel.SelectedFilter, Mode=OneWay, Converter={StaticResource FilterToPillBackgroundConverter}, ConverterParameter='Protected'}"
+                                BorderBrush="{x:Bind ViewModel.SelectedFilter, Mode=OneWay, Converter={StaticResource FilterToPillBorderConverter}, ConverterParameter='Protected'}"
+                                BorderThickness="1">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <TextBlock Text="Protected" FontSize="12.5"
+                                           FontWeight="{x:Bind ViewModel.SelectedFilter, Mode=OneWay, Converter={StaticResource FilterToPillFontWeightConverter}, ConverterParameter='Protected'}" />
+                                <TextBlock Text="{x:Bind ViewModel.ProtectedCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}({0})'}"
+                                           FontSize="11.5" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Border>
             </StackPanel>
 
+            <!-- Right: Search Box & Multi-Selection Toolbar -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                <!-- Search Box -->
-                <TextBox Width="240" PlaceholderText="Search installed apps..."
+                <!-- Multi-selection batch bar -->
+                <StackPanel Orientation="Horizontal" Spacing="8"
+                            Visibility="{x:Bind ViewModel.HasSelectedPackages, Mode=OneWay}">
+                    <TextBlock Text="{x:Bind ViewModel.SelectedCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0} selected'}"
+                               VerticalAlignment="Center" FontWeight="SemiBold" FontSize="12.5" Margin="0,0,4,0" />
+                    <Button Content="Update Selected" Style="{ThemeResource AccentButtonStyle}"
+                            Height="34" CornerRadius="6" Padding="12,0,12,0" FontSize="12"
+                            Command="{x:Bind ViewModel.UpgradeSelectedCommand}" />
+                    <Button Content="Deselect All" Height="34" CornerRadius="6" Padding="12,0,12,0" FontSize="12"
+                            Command="{x:Bind ViewModel.DeselectAllCommand}" />
+                </StackPanel>
+
+                <!-- Search Filter Box -->
+                <TextBox Width="260" Height="36" CornerRadius="8"
+                         PlaceholderText="Search installed apps..."
                          Text="{x:Bind ViewModel.SearchFilter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                <!-- Refresh / Scan Button -->
-                <Button Command="{x:Bind ViewModel.ScanCommand}" ToolTipService.ToolTip="Check for updates">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <ProgressRing IsActive="{x:Bind ViewModel.IsScanning, Mode=OneWay}" Width="14" Height="14" 
-                                      Visibility="{x:Bind ViewModel.IsScanning, Mode=OneWay}" />
-                        <FontIcon Glyph="&#xE72C;" FontSize="13" 
-                                  Visibility="{x:Bind ViewModel.IsScanning, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
-                        <TextBlock Text="Check updates" />
-                    </StackPanel>
-                </Button>
-
-                <!-- 1-Click Update All Button -->
-                <Button Style="{ThemeResource AccentButtonStyle}" 
-                        Command="{x:Bind ViewModel.UpgradeAllUpdatesCommand}"
-                        Visibility="{x:Bind ViewModel.HasUpdates, Mode=OneWay}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <FontIcon Glyph="&#xE896;" FontSize="13" />
-                        <TextBlock Text="{x:Bind ViewModel.UpdatesAvailableCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}Update all ({0})'}" />
-                    </StackPanel>
-                </Button>
             </StackPanel>
         </Grid>
 
-        <!-- Filter Chips Bar -->
-        <Grid Grid.Row="1" Margin="0,0,0,12">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <!-- All Filter Button -->
-                <Button Click="OnFilterAllClicked">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="All" />
-                        <TextBlock Text="{x:Bind ViewModel.TotalAppsCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}({0})'}" 
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    </StackPanel>
-                </Button>
-
-                <!-- Updates Filter Button -->
-                <Button Click="OnFilterUpdatesClicked">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="Updates" />
-                        <Border Background="{ThemeResource SystemAccentColor}" CornerRadius="10" Padding="6,1,6,1" 
-                                Visibility="{x:Bind ViewModel.HasUpdates, Mode=OneWay}">
-                            <TextBlock Text="{x:Bind ViewModel.UpdatesAvailableCount, Mode=OneWay}" 
-                                       FontSize="11" Foreground="White" FontWeight="SemiBold" />
-                        </Border>
-                    </StackPanel>
-                </Button>
-
-                <!-- Protected Filter Button -->
-                <Button Click="OnFilterProtectedClicked">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="Protected" />
-                        <TextBlock Text="{x:Bind ViewModel.ProtectedCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}({0})'}" 
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-
-            <!-- Multi-selection batch bar -->
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10"
-                        Visibility="{x:Bind ViewModel.HasSelectedPackages, Mode=OneWay}">
-                <TextBlock Text="{x:Bind ViewModel.SelectedCount, Mode=OneWay, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}{0} selected'}" 
-                           VerticalAlignment="Center" FontWeight="SemiBold" />
-                <Button Content="Update Selected" Style="{ThemeResource AccentButtonStyle}" 
-                        Command="{x:Bind ViewModel.UpgradeSelectedCommand}" />
-                <Button Content="Deselect All" Command="{x:Bind ViewModel.DeselectAllCommand}" />
-            </StackPanel>
-        </Grid>
-
-        <!-- Feedback InfoBar -->
+        <!-- 3. Feedback InfoBar -->
         <InfoBar Grid.Row="2"
                  IsOpen="{x:Bind ViewModel.IsInfoBarOpen, Mode=TwoWay}"
                  Title="{x:Bind ViewModel.InfoBarTitle, Mode=OneWay}"
                  Message="{x:Bind ViewModel.InfoBarMessage, Mode=OneWay}"
                  Margin="0,0,0,10" />
 
-        <!-- Main Package List -->
+        <!-- 4. Package List Surface -->
         <Grid Grid.Row="3">
             <!-- Empty state when no apps match -->
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10"
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12"
                         Visibility="{x:Bind ViewModel.FilteredPackages.Count, Mode=OneWay, Converter={StaticResource IntToZeroVisibilityConverter}}">
-                <FontIcon Glyph="&#xE74C;" FontSize="40" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                <TextBlock Text="No apps found" Style="{ThemeResource SubtitleTextBlockStyle}" HorizontalAlignment="Center" />
-                <TextBlock Text="No installed apps match your current search or filter." 
-                           Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                <Border Width="64" Height="64" CornerRadius="32"
+                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                        HorizontalAlignment="Center">
+                    <FontIcon Glyph="&#xE721;" FontSize="24" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <TextBlock Text="No matching apps found" Style="{ThemeResource SubtitleTextBlockStyle}"
+                           FontWeight="SemiBold" HorizontalAlignment="Center" />
+                <TextBlock Text="Try adjusting your search query or switching filters above."
+                           Style="{ThemeResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            HorizontalAlignment="Center" />
             </StackPanel>
 
-            <!-- Package Rows -->
+            <!-- Package Cards ListView -->
             <ListView ItemsSource="{x:Bind ViewModel.FilteredPackages, Mode=OneWay}" SelectionMode="None">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:PackageItemViewModel">
                         <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                CornerRadius="8"
-                                Padding="12,8,12,8"
+                                CornerRadius="10"
+                                Padding="16,12,16,12"
                                 Margin="0,3,0,3">
                             <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto">
                                 <!-- Selection CheckBox -->
-                                <CheckBox Grid.Column="0" IsChecked="{x:Bind IsSelected, Mode=TwoWay}" 
-                                          MinWidth="32" Margin="0,0,8,0" VerticalAlignment="Center" />
+                                <CheckBox Grid.Column="0" IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                          MinWidth="32" Margin="0,0,10,0" VerticalAlignment="Center" />
 
-                                <!-- Initials Avatar -->
-                                <Border Grid.Column="1" Width="34" Height="34" CornerRadius="6" 
-                                        Background="{x:Bind Name, Converter={StaticResource NameToAvatarBrushConverter}}"
-                                        Margin="0,0,12,0" VerticalAlignment="Center">
-                                    <TextBlock Text="{x:Bind Initials}" Foreground="White" FontWeight="Bold" FontSize="13"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                <!-- Modern Fluent Software Icon Squircle -->
+                                <Border Grid.Column="1" Width="38" Height="38" CornerRadius="9"
+                                        Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        Margin="0,0,14,0" VerticalAlignment="Center">
+                                    <FontIcon Glyph="&#xE71D;" FontSize="16"
+                                              Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                              HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
 
-                                <!-- Title, ID, Source -->
-                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,12,0">
-                                    <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis" />
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="{x:Bind Id}" Style="{ThemeResource CaptionTextBlockStyle}" 
-                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Text="{x:Bind Source, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}• {0}'}" 
-                                                   Style="{ThemeResource CaptionTextBlockStyle}" 
-                                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}"
-                                                   Visibility="{x:Bind HasSource, Mode=OneWay}" />
+                                <!-- App Title, Package ID, Source -->
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="0,0,14,0">
+                                    <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" FontSize="14.5"
+                                               TextTrimming="CharacterEllipsis" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2,0,0">
+                                        <TextBlock Text="{x:Bind Id}" FontSize="12"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                   TextTrimming="CharacterEllipsis" />
+                                        <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                                CornerRadius="4" Padding="5,1,5,1"
+                                                Visibility="{x:Bind HasSource, Mode=OneWay}">
+                                            <TextBlock Text="{x:Bind Source}" FontSize="10.5"
+                                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                        </Border>
                                     </StackPanel>
                                 </StackPanel>
 
-                                <!-- Version / Update Indicator -->
+                                <!-- Version State & Indicator Badges -->
                                 <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" Margin="0,0,16,0">
                                     <!-- When Update is Available -->
                                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
                                                 Visibility="{x:Bind HasUpdate, Mode=OneWay}">
-                                        <TextBlock Text="{x:Bind InstalledVersion}" FontSize="12" 
+                                        <TextBlock Text="{x:Bind InstalledVersion}" FontSize="12"
                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                                         <FontIcon Glyph="&#xE72A;" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" VerticalAlignment="Center" />
-                                        <Border Background="{ThemeResource SystemAccentColor}" CornerRadius="4" Padding="6,2,6,2">
-                                            <TextBlock Text="{x:Bind AvailableVersion}" FontSize="11" Foreground="White" FontWeight="SemiBold" />
+                                        <Border Background="{ThemeResource SystemAccentColor}" CornerRadius="6" Padding="7,2,7,2">
+                                            <TextBlock Text="{x:Bind AvailableVersion}" FontSize="11.5" Foreground="White" FontWeight="SemiBold" />
                                         </Border>
                                     </StackPanel>
 
                                     <!-- When Up to Date -->
-                                    <TextBlock Text="{x:Bind InstalledVersion, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}v{0}'}" 
+                                    <TextBlock Text="{x:Bind InstalledVersion, Converter={StaticResource StringFormatConverter}, ConverterParameter='{}v{0}'}"
                                                FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center"
                                                Visibility="{x:Bind HasUpdate, Mode=OneWay, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
 
                                     <!-- Pinned Badge -->
-                                    <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="4" Padding="6,2,6,2"
+                                    <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6" Padding="6,2,6,2"
                                             Visibility="{x:Bind IsPinned, Mode=OneWay}">
                                         <StackPanel Orientation="Horizontal" Spacing="4">
                                             <FontIcon Glyph="&#xE718;" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -188,7 +317,10 @@
                                     </Border>
 
                                     <!-- Excluded Badge -->
-                                    <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="4" Padding="6,2,6,2"
+                                    <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6" Padding="6,2,6,2"
                                             Visibility="{x:Bind IsExcluded, Mode=OneWay}">
                                         <StackPanel Orientation="Horizontal" Spacing="4">
                                             <FontIcon Glyph="&#xE711;" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -197,42 +329,42 @@
                                     </Border>
                                 </StackPanel>
 
-                                <!-- Active Upgrade Status (In-Row) -->
+                                <!-- In-line Upgrade Progress -->
                                 <StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="0,0,16,0" MinWidth="130"
                                             Visibility="{x:Bind HasUpgradeProgress, Mode=OneWay}">
-                                    <ProgressBar Value="{x:Bind UpgradePercentage, Mode=OneWay}" 
-                                                 IsIndeterminate="{x:Bind IsUpgradeIndeterminate, Mode=OneWay}" 
-                                                 Maximum="100" Height="4" />
-                                    <TextBlock Text="{x:Bind UpgradeStatusMessage, Mode=OneWay}" 
-                                               Style="{ThemeResource CaptionTextBlockStyle}" 
-                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
-                                               FontSize="11" Margin="0,2,0,0" TextTrimming="CharacterEllipsis" />
+                                    <ProgressBar Value="{x:Bind UpgradePercentage, Mode=OneWay}"
+                                                 IsIndeterminate="{x:Bind IsUpgradeIndeterminate, Mode=OneWay}"
+                                                 Maximum="100" Height="4" CornerRadius="2" />
+                                    <TextBlock Text="{x:Bind UpgradeStatusMessage, Mode=OneWay}"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                               FontSize="11" Margin="0,3,0,0" TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
 
                                 <!-- Action Buttons -->
                                 <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                    <!-- 1-Click Update Button for this package -->
-                                    <Button Style="{ThemeResource AccentButtonStyle}" Padding="10,5,10,5"
+                                    <!-- 1-Click Update for this package -->
+                                    <Button Style="{ThemeResource AccentButtonStyle}"
+                                            Height="32" Padding="12,0,12,0" CornerRadius="6"
                                             Click="OnUpgradeItemClicked"
                                             Visibility="{x:Bind HasUpdate, Mode=OneWay}">
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <FontIcon Glyph="&#xE896;" FontSize="12" />
-                                            <TextBlock Text="Update" FontSize="12" />
+                                        <StackPanel Orientation="Horizontal" Spacing="5">
+                                            <FontIcon Glyph="&#xE896;" FontSize="11" />
+                                            <TextBlock Text="Update" FontSize="12" FontWeight="SemiBold" />
                                         </StackPanel>
                                     </Button>
 
-                                    <!-- More Actions Dropdown Menu -->
-                                    <DropDownButton Padding="6,5,6,5">
-                                        <FontIcon Glyph="&#xE712;" FontSize="12" />
+                                    <!-- More Actions DropDownButton -->
+                                    <DropDownButton Height="32" Width="32" Padding="0" CornerRadius="6">
+                                        <FontIcon Glyph="&#xE712;" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                         <DropDownButton.Flyout>
                                             <MenuFlyout>
-                                                <MenuFlyoutItem Text="{x:Bind IsPinned, Mode=OneWay, Converter={StaticResource PinButtonLabelConverter}}" 
+                                                <MenuFlyoutItem Text="{x:Bind IsPinned, Mode=OneWay, Converter={StaticResource PinButtonLabelConverter}}"
                                                                 Click="OnTogglePinClicked">
                                                     <MenuFlyoutItem.Icon>
                                                         <FontIcon Glyph="&#xE718;" />
                                                     </MenuFlyoutItem.Icon>
                                                 </MenuFlyoutItem>
-                                                <MenuFlyoutItem Text="{x:Bind IsExcluded, Mode=OneWay, Converter={StaticResource ExcludeButtonLabelConverter}}" 
+                                                <MenuFlyoutItem Text="{x:Bind IsExcluded, Mode=OneWay, Converter={StaticResource ExcludeButtonLabelConverter}}"
                                                                 Click="OnToggleExclusionClicked">
                                                     <MenuFlyoutItem.Icon>
                                                         <FontIcon Glyph="&#xE711;" />
