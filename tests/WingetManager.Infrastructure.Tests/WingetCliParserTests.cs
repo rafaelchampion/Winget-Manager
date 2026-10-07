@@ -115,4 +115,69 @@ public class WingetCliParserTests
         // Assert
         percent.Should().Be(expected);
     }
+
+    [Theory]
+    [InlineData("Git.Git", "Git.Git")]
+    [InlineData("Microsoft.VisualStudioCode", "Microsoft.VisualStudioCode")]
+    [InlineData("App-Name_1.0+test", "App-Name_1.0+test")]
+    [InlineData("Git.Git\"; calc.exe", "Git.Gitcalc.exe")]
+    [InlineData("id with spaces", "idwithspaces")]
+    [InlineData("id\nwith\rnewlines", "idwithnewlines")]
+    public void SanitizePackageId_ShouldStripUnsafeCharacters(string input, string expected)
+    {
+        var sanitized = WingetCliParser.SanitizePackageId(input);
+        sanitized.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("vscode", "vscode")]
+    [InlineData("\"visual studio\"", "visual studio")]
+    [InlineData("test; calc.exe", "test calc.exe")]
+    [InlineData("search | echo hacked", "search  echo hacked")]
+    public void SanitizeSearchQuery_ShouldStripDangerousShellCharacters(string input, string expected)
+    {
+        var sanitized = WingetCliParser.SanitizeSearchQuery(input);
+        sanitized.Should().Be(expected);
+    }
+
+    [Fact]
+    public void InterpretExitCode_WhenExitCodeZero_ShouldReturnSuccess()
+    {
+        var (success, error) = WingetCliParser.InterpretExitCode(0, "", "");
+        success.Should().BeTrue();
+        error.Should().BeNull();
+    }
+
+    [Fact]
+    public void InterpretExitCode_WhenExitCode3010_ShouldReturnSuccessWithRebootNotice()
+    {
+        var (success, error) = WingetCliParser.InterpretExitCode(3010, "", "");
+        success.Should().BeTrue();
+        error.Should().Contain("reboot");
+    }
+
+    [Fact]
+    public void InterpretExitCode_WhenExitCode1603_ShouldIdentifyElevationRequirement()
+    {
+        var (success, error) = WingetCliParser.InterpretExitCode(1603, "", "");
+        success.Should().BeFalse();
+        error.Should().Contain("elevation");
+    }
+
+    [Fact]
+    public void InterpretExitCode_WhenExitCode1618_ShouldIdentifyAlreadyRunningInstaller()
+    {
+        var (success, error) = WingetCliParser.InterpretExitCode(1618, "", "");
+        success.Should().BeFalse();
+        error.Should().Contain("already in progress");
+    }
+
+    [Fact]
+    public void InterpretExitCode_WhenStdoutContainsSuccessfulInstallation_ShouldReturnSuccess()
+    {
+        var (success, error) = WingetCliParser.InterpretExitCode(1, "Successfully installed package!", "");
+        success.Should().BeTrue();
+        error.Should().BeNull();
+    }
 }
+

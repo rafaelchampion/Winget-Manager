@@ -224,4 +224,78 @@ public static partial class WingetCliParser
 
         return result;
     }
+
+    public static string SanitizePackageId(string? packageId)
+    {
+        if (string.IsNullOrWhiteSpace(packageId)) return string.Empty;
+        // Keep valid package ID characters: letters, numbers, dot, dash, underscore, plus
+        return Regex.Replace(packageId.Trim(), @"[^a-zA-Z0-9.\-_+]", "");
+    }
+
+    public static string SanitizeSearchQuery(string? query)
+    {
+        if (string.IsNullOrWhiteSpace(query)) return string.Empty;
+        // Strip double quotes, backticks, newlines, pipe, and semicolons to prevent argument breakout
+        return Regex.Replace(query.Trim(), @"[""`\r\n|;&$]", "");
+    }
+
+    public static (bool IsSuccess, string? ErrorMessage) InterpretExitCode(int exitCode, string stdout, string stderr)
+    {
+        // Check for recognized success codes
+        if (exitCode == 0)
+        {
+            return (true, null);
+        }
+
+        if (exitCode == 3010 || exitCode == 1641)
+        {
+            return (true, "Installation completed. System reboot is required to finish setup.");
+        }
+
+        // Check for textual success confirmations even if winget had warnings
+        if (stdout.Contains("Successfully installed", StringComparison.OrdinalIgnoreCase) ||
+            stdout.Contains("Instalação bem-sucedida", StringComparison.OrdinalIgnoreCase) ||
+            stdout.Contains("Successfully updated", StringComparison.OrdinalIgnoreCase) ||
+            stdout.Contains("Atualização bem-sucedida", StringComparison.OrdinalIgnoreCase))
+        {
+            return (true, null);
+        }
+
+        // Known Win32 / MSI installer exit codes
+        string? message = exitCode switch
+        {
+            1602 => "Installation was cancelled by the user.",
+            1603 => "Fatal error during installation (1603). Administrator elevation or missing dependencies may be required.",
+            1618 => "Another installation is already in progress. Please wait for it to complete.",
+            1619 => "Installer package could not be opened.",
+            1620 => "Invalid installation package.",
+            1638 => "Another version of this product is already installed.",
+            // Winget specific HRESULT error codes
+            unchecked((int)0x8A150011) => "No applicable updates found for this package.",
+            unchecked((int)0x8A150014) => "Package agreements were not accepted.",
+            unchecked((int)0x8A150022) => "Package installation requires administrator elevation.",
+            unchecked((int)0x8A15002B) => "Installation was cancelled by the user.",
+            unchecked((int)0x8A15002C) => "Installer hash mismatch. Download may be corrupt or repository manifest outdated.",
+            unchecked((int)0x8A150005) => "Failed to update package source repositories.",
+            unchecked((int)0x8A150006) => "Package was not found in the configured sources.",
+            _ => null
+        };
+
+        if (message != null)
+        {
+            return (false, message);
+        }
+
+        // Fallback: extract meaningful error snippet from stderr or stdout
+        string details = !string.IsNullOrWhiteSpace(stderr) ? stderr.Trim() : stdout.Trim();
+        if (string.IsNullOrWhiteSpace(details))
+        {
+            return (false, $"Process exited with error code {exitCode} (0x{exitCode:X8}).");
+        }
+
+        // Get the last non-empty line of details for a concise message
+        var lastLine = details.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+        return (false, $"Process exited with error code {exitCode}: {lastLine}");
+    }
 }
+
